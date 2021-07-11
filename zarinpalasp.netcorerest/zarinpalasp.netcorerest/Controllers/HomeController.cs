@@ -46,7 +46,7 @@ namespace zarinpalasp.netcorerest.Controllers
                     "&description=" + description +
                     "&metadata[0]=" + metadata[0] + "& metadata[1]=" + metadata[1];
                 ;
-
+                
 
                 var client = new RestClient(requesturl);
 
@@ -67,7 +67,7 @@ namespace zarinpalasp.netcorerest.Controllers
                 string dataauth = jodata["data"].ToString();
 
 
-                if (authority != "[]")
+                if (dataauth != "[]")
                 {
 
 
@@ -80,7 +80,7 @@ namespace zarinpalasp.netcorerest.Controllers
                 {
 
                     //return BadRequest();
-                    return BadRequest("error ");
+                    return BadRequest("error " + errorscode);
 
 
                 }
@@ -90,7 +90,7 @@ namespace zarinpalasp.netcorerest.Controllers
 
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+            //    throw new Exception(ex.Message);
 
 
             }
@@ -152,7 +152,7 @@ namespace zarinpalasp.netcorerest.Controllers
             catch (Exception ex)
             {
 
-                throw new Exception(ex.Message);
+               // throw new Exception(ex.Message);
             }
             return NotFound();
         }
