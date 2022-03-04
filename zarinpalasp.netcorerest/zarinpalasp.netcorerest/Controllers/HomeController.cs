@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using zarinpalasp.netcorerest.Models;
 
@@ -13,7 +14,7 @@ namespace zarinpalasp.netcorerest.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        string merchant = "424baadf-ea4c-4744-b29e-5eb62a855821";
+        string merchant = "cfa83c81-89b0-4993-9445-2c3fcd323455";
         string amount = "1100";
         string authority;
         string description = "خرید تستی ";
@@ -26,15 +27,27 @@ namespace zarinpalasp.netcorerest.Controllers
             _logger = logger;
         }
 
-      
+      //public IActionResult PaymentHttpClient()
+      //  {
+
+      //      var request = new HttpRequestMessage(
+      //HttpMethod.Post,
+      //"https://someaddress.com/api/resource");
+      //      request.Headers.Add("Accept", "application/vnd.github.v3+json");
+      //      request.Headers.Add("User-Agent", "YourApp");
+
+      //      var client = _clientFactory.createClient();
+      //      var response = await client.SendAsync(request);
+      //  }
         public IActionResult Payment()
         {
+         
 
             try
             {
                 string[] metadata = new string[2];
-                metadata[0] = "[mobile: 09121234567]";
-                metadata[1] = "[email: info.test@gmail.com]";
+                metadata[0] = "";
+                metadata[1] = "";
 
                 //be dalil in ke metadata be sorate araye ast va do meghdare mobile va email dar metadata gharar mmigirad
                 //shoma mitavanid in maghadir ra az kharidar begirid va set konid dar gheir in sorat khali ersal konid
@@ -43,27 +56,28 @@ namespace zarinpalasp.netcorerest.Controllers
                 requesturl = "https://api.zarinpal.com/pg/v4/payment/request.json?merchant_id=" +
                     merchant + "&amount=" + amount +
                     "&callback_url=" + callbackurl +
-                    "&description=" + description +
-                    "&metadata[0]=" + metadata[0] + "& metadata[1]=" + metadata[1];
+                    "&description=" + description;
+                    //+"&metadata[0]=" + metadata[0] + "& metadata[1]=" + metadata[1];
                 ;
                 
 
                 var client = new RestClient(requesturl);
 
-                client.Timeout = -1;
 
-                var request = new RestRequest(Method.POST);
+
+                Method method = Method.Post;
+                var request = new RestRequest("",method );
 
                 request.AddHeader("accept", "application/json");
 
                 request.AddHeader("content-type", "application/json");
 
-                IRestResponse requestresponse = client.Execute(request);
+                var  requestresponse = client.ExecuteAsync(request);
 
-                Newtonsoft.Json.Linq.JObject jo = Newtonsoft.Json.Linq.JObject.Parse(requestresponse.Content);
+                Newtonsoft.Json.Linq.JObject jo = Newtonsoft.Json.Linq.JObject.Parse(requestresponse.Result.Content);
                 string errorscode = jo["errors"].ToString();
 
-                Newtonsoft.Json.Linq.JObject jodata = Newtonsoft.Json.Linq.JObject.Parse(requestresponse.Content);
+                Newtonsoft.Json.Linq.JObject jodata = Newtonsoft.Json.Linq.JObject.Parse(requestresponse.Result.Content);
                 string dataauth = jodata["data"].ToString();
 
 
@@ -116,21 +130,20 @@ namespace zarinpalasp.netcorerest.Controllers
                     + authority;
 
                 var client = new RestClient(url);
-                client.Timeout = -1;
-
-                var request = new RestRequest(Method.POST);
+                Method method = Method.Post;
+                var request = new RestRequest("", method);
 
                 request.AddHeader("accept", "application/json");
 
                 request.AddHeader("content-type", "application/json");
 
-                IRestResponse response = client.Execute(request);
+                var  response = client.ExecuteAsync(request);
 
 
-                Newtonsoft.Json.Linq.JObject jodata = Newtonsoft.Json.Linq.JObject.Parse(response.Content);
+                Newtonsoft.Json.Linq.JObject jodata = Newtonsoft.Json.Linq.JObject.Parse(response.Result.Content);
                 string data = jodata["data"].ToString();
 
-                Newtonsoft.Json.Linq.JObject jo = Newtonsoft.Json.Linq.JObject.Parse(response.Content);
+                Newtonsoft.Json.Linq.JObject jo = Newtonsoft.Json.Linq.JObject.Parse(response.Result.Content);
                 string errors = jo["errors"].ToString();
 
                 if (data != "[]")

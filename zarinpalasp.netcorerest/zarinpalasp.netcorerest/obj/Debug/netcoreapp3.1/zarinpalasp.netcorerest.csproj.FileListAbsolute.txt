@@ -110,3 +110,4 @@ C:\asp.net core projects\zarinpal\zarinpalasp.netcorerest\zarinpalasp.netcoreres
 C:\asp.net core projects\zarinpal\zarinpalasp.netcorerest\zarinpalasp.netcorerest\bin\Debug\netcoreapp3.1\zh-Hans\Microsoft.CodeAnalysis.Workspaces.resources.dll
 C:\asp.net core projects\zarinpal\zarinpalasp.netcorerest\zarinpalasp.netcorerest\bin\Debug\netcoreapp3.1\zh-Hant\Microsoft.CodeAnalysis.Workspaces.resources.dll
 C:\asp.net core projects\zarinpal\zarinpalasp.netcorerest\zarinpalasp.netcorerest\obj\Debug\netcoreapp3.1\Razor\Views\Home\VerifyPayment.cshtml.g.cs
+C:\asp.net core projects\zarinpal\zarinpalasp.netcorerest\zarinpalasp.netcorerest\bin\Debug\netcoreapp3.1\System.Text.Json.dll
