@@ -1,11 +1,16 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
 using System.Threading.Tasks;
 using zarinpalasp.netcorerest.Models;
 
@@ -27,18 +32,8 @@ namespace zarinpalasp.netcorerest.Controllers
             _logger = logger;
         }
 
-      //public IActionResult PaymentHttpClient()
-      //  {
+  
 
-      //      var request = new HttpRequestMessage(
-      //HttpMethod.Post,
-      //"https://someaddress.com/api/resource");
-      //      request.Headers.Add("Accept", "application/vnd.github.v3+json");
-      //      request.Headers.Add("User-Agent", "YourApp");
-
-      //      var client = _clientFactory.createClient();
-      //      var response = await client.SendAsync(request);
-      //  }
         public IActionResult Payment()
         {
          
@@ -170,6 +165,124 @@ namespace zarinpalasp.netcorerest.Controllers
             return NotFound();
         }
 
+      public async Task< IActionResult> PaymenBytHttpClient()
+        {
+
+            try
+            {
+
+                using (var client = new HttpClient())
+                {
+                    string requesturl = "https://api.zarinpal.com/pg/v4/payment/request.json?";
+
+
+
+                    string amount = this.amount;
+                    string callbackUrl = this.callbackurl;
+                    string description = this.description;
+                    string merchant = this.merchant;
+                    string Reqparameters = $"merchant_id={merchant}&amount={amount}&callback_url={callbackUrl}&description={description}";
+
+                    HttpContent content = new StringContent(Reqparameters, Encoding.UTF8, "application/json");
+
+                    HttpResponseMessage response = await client.PostAsync(requesturl + Reqparameters, content);
+                  
+                    string responseBody = await response.Content.ReadAsStringAsync();
+                    Newtonsoft.Json.Linq.JObject jo = Newtonsoft.Json.Linq.JObject.Parse(responseBody);
+                    string errorscode = jo["errors"].ToString();
+
+                    Newtonsoft.Json.Linq.JObject jodata = Newtonsoft.Json.Linq.JObject.Parse(responseBody);
+                    string dataauth = jodata["data"].ToString();
+
+
+                    if (dataauth != "[]")
+                    {
+
+
+                        authority = jodata["data"]["authority"].ToString();
+                        string gatewayUrl = "https://www.zarinpal.com/pg/StartPay/" + authority;
+                        return Redirect(gatewayUrl);
+
+                    }
+                    else
+                    {
+
+                        //return BadRequest();
+                        return BadRequest("error " + errorscode);
+
+
+                    }
+
+                }
+
+     
+            }
+
+            catch (Exception ex)
+            {
+                //    throw new Exception(ex.Message);
+
+
+            }
+            return null;
+        }
+
+        public async Task<IActionResult> VerifyByHttpClient()
+        {
+            try
+            {
+
+                if (HttpContext.Request.Query["Authority"] != "")
+                {
+                   this. authority = HttpContext.Request.Query["Authority"];
+                }
+
+                using (HttpClient client = new HttpClient())
+                {
+                string url = "https://api.zarinpal.com/pg/v4/payment/verify.json?";
+                 
+                string amount = this.amount;
+                string authority = this.authority;
+                string merchant = this.merchant;
+                string Reqparameters = $"merchant_id={merchant}&amount={amount}&authority={authority}";
+
+                HttpContent content = new StringContent(Reqparameters, Encoding.UTF8, "application/json");
+
+                HttpResponseMessage response = await client.PostAsync(url + Reqparameters, content);
+                    string responseBody = await response.Content.ReadAsStringAsync();
+
+                    Newtonsoft.Json.Linq.JObject jodata = Newtonsoft.Json.Linq.JObject.Parse(responseBody);
+                    string data = jodata["data"].ToString();
+
+                    Newtonsoft.Json.Linq.JObject jo = Newtonsoft.Json.Linq.JObject.Parse(responseBody);
+                    string errors = jo["errors"].ToString();
+
+                    if (data != "[]")
+                {
+                    string refid = jodata["data"]["ref_id"].ToString();
+                    ViewBag.code = refid;
+                    return View();
+                }
+                else if (errors != "[]")
+                {
+
+                    string errorscode = jo["errors"]["code"].ToString();
+                    return BadRequest($"error code {errorscode}");
+
+                }
+                }
+               
+
+
+            }
+            catch (Exception ex)
+            {
+
+                 throw ex;
+            }
+            return NotFound();
+        }
+
         public IActionResult Index()
         {
             return View();
@@ -180,10 +293,7 @@ namespace zarinpalasp.netcorerest.Controllers
             return View();
         }
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }
     }
+
+
 }
