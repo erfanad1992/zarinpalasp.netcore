@@ -14,6 +14,7 @@ using System.Text;
 using System.Threading.Tasks;
 using zarinpalasp.netcorerest.Models;
 
+
 namespace zarinpalasp.netcorerest.Controllers
 {
     public class HomeController : Controller
@@ -23,56 +24,50 @@ namespace zarinpalasp.netcorerest.Controllers
         string amount = "1100";
         string authority;
         string description = "خرید تستی ";
-        string callbackurl = "http://localhost:2812/Home/VerifyPayment";
+        string callbackurl = "http://localhost:2812/Home/VerifyByHttpClient";
 
-  
+
 
         public HomeController(ILogger<HomeController> logger)
-       {
+        {
             _logger = logger;
         }
 
-  
+
 
         public IActionResult Payment()
         {
-         
+
 
             try
             {
-                string[] metadata = new string[2];
-                metadata[0] = "";
-                metadata[1] = "";
+                RequestParameters Parameters = new RequestParameters(merchant, amount, description, callbackurl, "", "");
+
+
 
                 //be dalil in ke metadata be sorate araye ast va do meghdare mobile va email dar metadata gharar mmigirad
                 //shoma mitavanid in maghadir ra az kharidar begirid va set konid dar gheir in sorat khali ersal konid
 
-                string requesturl;
-                requesturl = "https://api.zarinpal.com/pg/v4/payment/request.json?merchant_id=" +
-                    merchant + "&amount=" + amount +
-                    "&callback_url=" + callbackurl +
-                    "&description=" + description;
-                    //+"&metadata[0]=" + metadata[0] + "& metadata[1]=" + metadata[1];
-                ;
-                
-
-                var client = new RestClient(requesturl);
-
-
+                var client = new RestClient(URLs.requestUrl);
 
                 Method method = Method.Post;
-                var request = new RestRequest("",method );
+
+                var request = new RestRequest("", method);
 
                 request.AddHeader("accept", "application/json");
 
                 request.AddHeader("content-type", "application/json");
 
-                var  requestresponse = client.ExecuteAsync(request);
+                request.AddJsonBody(Parameters);
 
-                Newtonsoft.Json.Linq.JObject jo = Newtonsoft.Json.Linq.JObject.Parse(requestresponse.Result.Content);
+                var requestresponse = client.ExecuteAsync(request);
+
+                JObject jo = JObject.Parse(requestresponse.Result.Content);
+
                 string errorscode = jo["errors"].ToString();
 
-                Newtonsoft.Json.Linq.JObject jodata = Newtonsoft.Json.Linq.JObject.Parse(requestresponse.Result.Content);
+                JObject jodata = JObject.Parse(requestresponse.Result.Content);
+
                 string dataauth = jodata["data"].ToString();
 
 
@@ -81,141 +76,22 @@ namespace zarinpalasp.netcorerest.Controllers
 
 
                     authority = jodata["data"]["authority"].ToString();
-                    string gatewayUrl = "https://www.zarinpal.com/pg/StartPay/" + authority;
+
+                    string gatewayUrl = URLs.gateWayUrl + authority;
+
                     return Redirect(gatewayUrl);
 
                 }
                 else
                 {
 
-                    //return BadRequest();
+
                     return BadRequest("error " + errorscode);
 
 
                 }
 
 
-            }
-
-            catch (Exception ex)
-            {
-            //    throw new Exception(ex.Message);
-
-
-            }
-            return null;
-        }
-
-        public IActionResult VerifyPayment()
-        {
-
-           // string authorityverify;
-
-            try
-            {
-
-                if (HttpContext.Request.Query["Authority"] != "") {
-                    authority = HttpContext.Request.Query["Authority"];
-                }
-
-             
-                string url = "https://api.zarinpal.com/pg/v4/payment/verify.json?merchant_id=" +
-                    merchant + "&amount="
-                    + amount + "&authority="
-                    + authority;
-
-                var client = new RestClient(url);
-                Method method = Method.Post;
-                var request = new RestRequest("", method);
-
-                request.AddHeader("accept", "application/json");
-
-                request.AddHeader("content-type", "application/json");
-
-                var  response = client.ExecuteAsync(request);
-
-
-                Newtonsoft.Json.Linq.JObject jodata = Newtonsoft.Json.Linq.JObject.Parse(response.Result.Content);
-                string data = jodata["data"].ToString();
-
-                Newtonsoft.Json.Linq.JObject jo = Newtonsoft.Json.Linq.JObject.Parse(response.Result.Content);
-                string errors = jo["errors"].ToString();
-
-                if (data != "[]")
-                {
-                    string refid = jodata["data"]["ref_id"].ToString();
-                    ViewBag.code = refid;
-                    return View();
-                }
-                else if (errors != "[]")
-                {
-
-                    string errorscode = jo["errors"]["code"].ToString();
-                    return BadRequest($"error code {errorscode}");
-
-                }
-
-
-            }
-            catch (Exception ex)
-            {
-
-               // throw new Exception(ex.Message);
-            }
-            return NotFound();
-        }
-
-      public async Task< IActionResult> PaymenBytHttpClient()
-        {
-
-            try
-            {
-
-                using (var client = new HttpClient())
-                {
-                    string requesturl = "https://api.zarinpal.com/pg/v4/payment/request.json?";
-
-
-
-                    string amount = this.amount;
-                    string callbackUrl = this.callbackurl;
-                    string description = this.description;
-                    string merchant = this.merchant;
-                    string Reqparameters = $"merchant_id={merchant}&amount={amount}&callback_url={callbackUrl}&description={description}";
-
-                    HttpContent content = new StringContent(Reqparameters, Encoding.UTF8, "application/json");
-
-                    HttpResponseMessage response = await client.PostAsync(requesturl + Reqparameters, content);
-                  
-                    string responseBody = await response.Content.ReadAsStringAsync();
-                    Newtonsoft.Json.Linq.JObject jo = Newtonsoft.Json.Linq.JObject.Parse(responseBody);
-                    string errorscode = jo["errors"].ToString();
-
-                    Newtonsoft.Json.Linq.JObject jodata = Newtonsoft.Json.Linq.JObject.Parse(responseBody);
-                    string dataauth = jodata["data"].ToString();
-
-
-                    if (dataauth != "[]")
-                    {
-
-
-                        authority = jodata["data"]["authority"].ToString();
-                        string gatewayUrl = "https://www.zarinpal.com/pg/StartPay/" + authority;
-                        return Redirect(gatewayUrl);
-
-                    }
-                    else
-                    {
-
-                        //return BadRequest();
-                        return BadRequest("error " + errorscode);
-
-
-                    }
-
-                }
-
-     
             }
 
             catch (Exception ex)
@@ -227,73 +103,211 @@ namespace zarinpalasp.netcorerest.Controllers
             return null;
         }
 
-        public async Task<IActionResult> VerifyByHttpClient()
+        public IActionResult VerifyPayment()
         {
+
+            // string authorityverify;
+
             try
             {
+                VerifyParameters parameters = new VerifyParameters();
+
 
                 if (HttpContext.Request.Query["Authority"] != "")
                 {
-                   this. authority = HttpContext.Request.Query["Authority"];
+                    authority = HttpContext.Request.Query["Authority"];
                 }
 
-                using (HttpClient client = new HttpClient())
-                {
-                string url = "https://api.zarinpal.com/pg/v4/payment/verify.json?";
-                 
-                string amount = this.amount;
-                string authority = this.authority;
-                string merchant = this.merchant;
-                string Reqparameters = $"merchant_id={merchant}&amount={amount}&authority={authority}";
+                parameters.authority = authority;
+                parameters.amount = amount;
+                parameters.merchant_id = merchant;
 
-                HttpContent content = new StringContent(Reqparameters, Encoding.UTF8, "application/json");
 
-                HttpResponseMessage response = await client.PostAsync(url + Reqparameters, content);
-                    string responseBody = await response.Content.ReadAsStringAsync();
+                var client = new RestClient(URLs.verifyUrl);
+                Method method = Method.Post;
+                var request = new RestRequest("", method);
 
-                    Newtonsoft.Json.Linq.JObject jodata = Newtonsoft.Json.Linq.JObject.Parse(responseBody);
-                    string data = jodata["data"].ToString();
+                request.AddHeader("accept", "application/json");
 
-                    Newtonsoft.Json.Linq.JObject jo = Newtonsoft.Json.Linq.JObject.Parse(responseBody);
-                    string errors = jo["errors"].ToString();
+                request.AddHeader("content-type", "application/json");
+                request.AddJsonBody(parameters);
 
-                    if (data != "[]")
+                var response = client.ExecuteAsync(request);
+
+
+                JObject jodata = JObject.Parse(response.Result.Content);
+
+                string data = jodata["data"].ToString();
+
+                JObject jo = JObject.Parse(response.Result.Content);
+
+                string errors = jo["errors"].ToString();
+
+                if (data != "[]")
                 {
                     string refid = jodata["data"]["ref_id"].ToString();
+
                     ViewBag.code = refid;
+
                     return View();
                 }
                 else if (errors != "[]")
                 {
 
                     string errorscode = jo["errors"]["code"].ToString();
+
                     return BadRequest($"error code {errorscode}");
 
                 }
-                }
-               
 
 
             }
             catch (Exception ex)
             {
 
-                 throw ex;
+                throw new Exception(ex.Message);
             }
             return NotFound();
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> PaymenBytHttpClient()
         {
-            return View();
+
+            try
+            {
+
+                using (var client = new HttpClient())
+                {
+                    RequestParameters parameters = new RequestParameters(merchant, amount, description, callbackurl, "", "");
+
+                    var json = JsonConvert.SerializeObject(parameters);
+
+                    HttpContent content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                    HttpResponseMessage response = await client.PostAsync(URLs.requestUrl, content);
+
+                    string responseBody = await response.Content.ReadAsStringAsync();
+
+                    JObject jo = JObject.Parse(responseBody);
+                    string errorscode = jo["errors"].ToString();
+
+                    JObject jodata = JObject.Parse(responseBody);
+                    string dataauth = jodata["data"].ToString();
+
+
+                    if (dataauth != "[]")
+                    {
+
+
+                        authority = jodata["data"]["authority"].ToString();
+
+                        string gatewayUrl = URLs.gateWayUrl + authority;
+
+                        return Redirect(gatewayUrl);
+
+                    }
+                    else
+                    {
+
+                        return BadRequest("error " + errorscode);
+
+
+                    }
+
+                }
+
+
+            }
+
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+
+
+            }
+            return NotFound();
         }
 
-        public IActionResult Privacy()
+        public async Task<IActionResult> VerifyByHttpClient()
         {
+            try
+            {
+
+                VerifyParameters parameters = new VerifyParameters();
+
+
+                if (HttpContext.Request.Query["Authority"] != "")
+                {
+                    authority = HttpContext.Request.Query["Authority"];
+                }
+
+                parameters.authority = authority;
+
+                parameters.amount = amount;
+
+                parameters.merchant_id = merchant;
+
+
+                using (HttpClient client = new HttpClient())
+                {
+
+                    var json = JsonConvert.SerializeObject(parameters);
+
+                    HttpContent content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                    HttpResponseMessage response = await client.PostAsync(URLs.verifyUrl, content);
+
+                    string responseBody = await response.Content.ReadAsStringAsync();
+
+                    JObject jodata = JObject.Parse(responseBody);
+
+                    string data = jodata["data"].ToString();
+
+                    JObject jo = JObject.Parse(responseBody);
+
+                    string errors = jo["errors"].ToString();
+
+                    if (data != "[]")
+                    {
+                        string refid = jodata["data"]["ref_id"].ToString();
+
+                        ViewBag.code = refid;
+
+                        return View();
+                    }
+                    else if (errors != "[]")
+                    {
+
+                        string errorscode = jo["errors"]["code"].ToString();
+
+                        return BadRequest($"error code {errorscode}");
+
+                    }
+                }
+
+
+
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+            return NotFound();
+        }
+
+
+        public IActionResult Index()
+        {
+
             return View();
         }
 
     }
+
+
+
+
 
 
 }

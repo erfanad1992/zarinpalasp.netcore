@@ -8,7 +8,6 @@ C:\asp.net core projects\zarinpal\zarinpalasp.netcorerest\zarinpalasp.netcoreres
 C:\asp.net core projects\zarinpal\zarinpalasp.netcorerest\zarinpalasp.netcorerest\bin\Debug\netcoreapp3.1\zarinpalasp.netcorerest.pdb
 C:\asp.net core projects\zarinpal\zarinpalasp.netcorerest\zarinpalasp.netcorerest\bin\Debug\netcoreapp3.1\zarinpalasp.netcorerest.Views.dll
 C:\asp.net core projects\zarinpal\zarinpalasp.netcorerest\zarinpalasp.netcorerest\bin\Debug\netcoreapp3.1\zarinpalasp.netcorerest.Views.pdb
-C:\asp.net core projects\zarinpal\zarinpalasp.netcorerest\zarinpalasp.netcorerest\obj\Debug\netcoreapp3.1\zarinpalasp.netcorerest.csprojAssemblyReference.cache
 C:\asp.net core projects\zarinpal\zarinpalasp.netcorerest\zarinpalasp.netcorerest\obj\Debug\netcoreapp3.1\zarinpalasp.netcorerest.AssemblyInfoInputs.cache
 C:\asp.net core projects\zarinpal\zarinpalasp.netcorerest\zarinpalasp.netcorerest\obj\Debug\netcoreapp3.1\zarinpalasp.netcorerest.AssemblyInfo.cs
 C:\asp.net core projects\zarinpal\zarinpalasp.netcorerest\zarinpalasp.netcorerest\obj\Debug\netcoreapp3.1\zarinpalasp.netcorerest.csproj.CoreCompileInputs.cache
