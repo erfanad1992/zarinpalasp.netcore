@@ -13,7 +13,7 @@ namespace zarinpalasp.netcorerest.Models
         public string description { get; set; }
         public string callback_url { get; set; }
 
-        public string[]? metadata { get; set; }
+        public Dictionary<string, string>? metadata { get; set; }
 
         public RequestParameters(string merchant_id, string amount, string description, string callback_url,string? mobile,string? email )
         {
@@ -21,14 +21,14 @@ namespace zarinpalasp.netcorerest.Models
             this.amount = amount;
             this.description = description;
             this.callback_url = callback_url;
-            this.metadata = new string[2];
+            this.metadata = new Dictionary<string, string>();
             if (mobile!=null)
             {
-                this.metadata[0] = mobile;
+                this.metadata["mobile"] = mobile;
             }
             if (email!=null)
             {
-                this.metadata[1] = email;
+                this.metadata["email"] = email;
             }
 
 
